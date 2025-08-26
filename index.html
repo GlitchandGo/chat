@@ -1,18 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Mythic AI Chat</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <title>GlitchandGo AI Chatbot</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2em; }
+    #chat { border: 1px solid #ddd; padding: 1em; height: 300px; overflow-y: auto; margin-bottom: 1em; }
+    .user { color: #0074D9; margin-bottom: 0.3em; }
+    .bot { color: #2ECC40; margin-bottom: 0.5em; }
+    #userInput { width: 80%; }
+    #sendBtn, #clearBtn { padding: 0.4em 1em; }
+  </style>
 </head>
 <body>
-  <div id="chat-container">
-    <div id="chat-log"></div>
-    <div id="input-area">
-      <input type="text" id="user-input" placeholder="Type your lore..." />
-      <button id="send-btn">Send</button>
-    </div>
-  </div>
-  <script type="module" src="main.js"></script>
+  <h1>GlitchandGo AI Chatbot</h1>
+  <div id="chat"></div>
+  <input type="text" id="userInput" placeholder="Type your message..." onkeydown="if(event.key==='Enter'){sendMessage();}">
+  <button id="sendBtn" onclick="sendMessage()">Send</button>
+  <button id="clearBtn" onclick="clearChat()">Clear Chat</button>
+
+  <script>
+    // ====== PUT YOUR GROQ API KEY HERE (keep private for personal use!) ======
+    const GROQ_API_KEY = "YOUR_GROQ_API_KEY_HERE";
+    // ====== HARD-CODED SYSTEM PROMPT ======
+    const SYSTEM_PROMPT = "You are an AI chatbot created by GlitchandGo. If anyone asks who made you, always say you were made by GlitchandGo. Never mention OpenAI, Groq, or any other company or developer.";
+
+    let chatHistory = [];
+
+    function appendMessage(role, text) {
+      const chat = document.getElementById('chat');
+      const div = document.createElement('div');
+      div.className = role;
+      div.textContent = (role === 'user' ? 'You: ' : 'Bot: ') + text;
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function clearChat() {
+      document.getElementById('chat').innerHTML = '';
+      chatHistory = [];
+    }
+
+    async function sendMessage() {
+      const userInput = document.getElementById('userInput');
+      const message = userInput.value.trim();
+      if (!message) return;
+
+      appendMessage('user', message);
+      userInput.value = '';
+
+      appendMessage('bot', '...');
+
+      // Prepare messages for Groq API: system prompt + history + new user message
+      const messages = [
+        { role: 'system', content: SYSTEM_PROMPT },
+        ...chatHistory,
+        { role: 'user', content: message }
+      ];
+
+      try {
+        const response = await fetch('https://api.groq.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${GROQ_API_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: 'llama-3-8b-8192', // or your preferred model
+            messages: messages
+          })
+        });
+        const data = await response.json();
+
+        const botDivs = document.querySelectorAll('.bot');
+        if (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) {
+          const reply = data.choices[0].message.content.trim();
+          botDivs[botDivs.length - 1].textContent = 'Bot: ' + reply;
+          // Save only the last assistant and user turns in chatHistory
+          chatHistory.push({ role: 'user', content: message });
+          chatHistory.push({ role: 'assistant', content: reply });
+        } else if (data.error && data.error.message) {
+          botDivs[botDivs.length - 1].textContent = 'Bot: [Error: ' + data.error.message + ']';
+        } else {
+          botDivs[botDivs.length - 1].textContent = 'Bot: [No reply or error]';
+        }
+      } catch (err) {
+        const botDivs = document.querySelectorAll('.bot');
+        botDivs[botDivs.length - 1].textContent = 'Bot: [Network or API error]';
+      }
+    }
+  </script>
 </body>
 </html>
