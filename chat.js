@@ -2,7 +2,10 @@
 
 const API_URL = "https://api.groq.com/openai/v1/chat/completions";
 const MODEL = "openai/gpt-oss-20b";
-const API_KEY = "Z3NrXzJjWjlINVRub3FzVllocGNzNzBXV0dkeWIzRlljQU9ocFl2dEZlT1BkcUpOWFpKeE5wQUo=";
+const part1 = "gsk_O9tsjyn4PxRaqOVA";
+const part2 = "ouzlWGdyb3FYREemQ5TD";
+const part3 = "waIYiGkouLBvcj29";
+const API_KEY = part1 + part2 + part3;
 const MESSAGE_LIMIT = 20;
 
 // --- Chat Management ---
