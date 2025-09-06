@@ -183,6 +183,30 @@ function currentChat() {
   return allChats.find(chat => chat.id === currentChatId);
 }
 
+// --- Dark mode logic (persisted) ---
+const body = document.body;
+const DARK_KEY = "glitchai_dark";
+const dmToggle = document.getElementById('darkmode-toggle');
+
+function setDarkMode(on) {
+  if (on) {
+    body.classList.add("dark");
+    localStorage.setItem(DARK_KEY, "1");
+    if(dmToggle) dmToggle.checked = true;
+  } else {
+    body.classList.remove("dark");
+    localStorage.setItem(DARK_KEY, "");
+    if(dmToggle) dmToggle.checked = false;
+  }
+}
+if(dmToggle) {
+  dmToggle.onchange = e => setDarkMode(e.target.checked);
+}
+
+// On page load
+if (localStorage.getItem(DARK_KEY) === "1") setDarkMode(true);
+else setDarkMode(false);
+
 // --- Sidebar logic ---
 const sidebar = document.getElementById('chats-sidebar');
 const chatListDiv = document.getElementById('chat-list');
