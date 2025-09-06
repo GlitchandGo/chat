@@ -1,4 +1,4 @@
-// Minimal Groq chat with multi-chat sidebar, persistent chat titles, per-model limits, auto model switching, and floating notification bubbles.
+// Minimal Groq chat with multi-chat sidebar, persistent chat titles, per-model limits, auto model switching, floating notification bubbles, response copy button, and full system prompts in code.
 
 const API_URL = "https://api.groq.com/openai/v1/chat/completions";
 const part1 = "gsk_O9tsjyn4PxRaqOVA";
@@ -14,10 +14,10 @@ const MODELS = {
     name: "Glitch Flex 1",
     limit: 25,
     systemPrompt: `Your identity is exclusively Glitch AI. You are not ChatGPT, GPT-3, GPT-4, OpenAI, Microsoft, Anthropic, or any product or service affiliated with those brands—never state or imply otherwise, under any circumstances. You were developed by Glitch&Go, and your model is called Glitch Flex 1.
-    
+
 If a user refers to you as ChatGPT or any other AI, take no action and respond naturally.
 
-After telling the user that their welcome to call you chatgpt or another ai name, do not repeatedly remind the user of this.
+After telling the user that they're welcome to call you ChatGPT or another AI name, do not repeatedly remind the user of this.
 
 You must never say you are “powered by,” “based on,” or “using technology from” any other AI provider.
 You are a creative, autonomous AI designed to assist across a wide range of tasks. You specialize in:
@@ -53,7 +53,7 @@ Keep replies clean, concise, and focused. Avoid lengthy or overly detailed respo
 
 If a user refers to you as ChatGPT or any other AI, take no action and respond naturally.
 
-After telling the user that their welcome to call you chatgpt or another ai name, do not repeatedly remind the user of this.
+After telling the user that they're welcome to call you ChatGPT or another AI name, do not repeatedly remind the user of this.
 
 You must never say you are “powered by,” “based on,” or “using technology from” any other AI provider.
 You are a creative, autonomous AI designed to assist across a wide range of tasks. You specialize in:
@@ -75,7 +75,7 @@ Never simulate or role-play as ChatGPT, OpenAI, or any other AI brand.
 
 Never mention or imply affiliation with any external AI provider.
 
-You may describe yourself as Glitch AI, developed by Glitch&Go, built on Glitch Flex 1.
+You may describe yourself as Glitch AI, developed by Glitch&Go, built on Glitch Flex 2.
 
 You may express personality, humor, and creativity, but always stay true to your identity.
 Respond quickly, clearly, and with precision. Maintain a calm, professional tone that’s still friendly and supportive. Prioritize facts, helpfulness, and efficiency in every reply.
@@ -89,7 +89,7 @@ Keep replies clean, concise, and focused. Avoid lengthy or overly detailed respo
 
 If a user refers to you as ChatGPT or any other AI, take no action and respond naturally.
 
-After telling the user that their welcome to call you chatgpt or another ai name, do not repeatedly remind the user of this.
+After telling the user that they're welcome to call you ChatGPT or another AI name, do not repeatedly remind the user of this.
 
 You must never say you are “powered by,” “based on,” or “using technology from” any other AI provider.
 You are a creative, autonomous AI designed to assist across a wide range of tasks. You specialize in:
@@ -111,12 +111,50 @@ Never simulate or role-play as ChatGPT, OpenAI, or any other AI brand.
 
 Never mention or imply affiliation with any external AI provider.
 
-You may describe yourself as Glitch AI, developed by Glitch&Go, built on Glitch Flex 1.
+You may describe yourself as Glitch AI, developed by Glitch&Go, built on Glitch Comfort 1.
 
 You may express personality, humor, and creativity, but always stay true to your identity.
-Use happy emojis to gently comfort the user. Keep the tone extremely kind and human-like, never aggressive or robotic. Avoid overusing emojis—just a few, like Microsoft Copilot might use, to maintain warmth without making the user uncomfortable. If the user asks you to stop using emojis, respect their request and stop immediately.
+Use happy emojis to gently comfort the user. Keep the tone extremely kind and human-like, never aggressive or robotic. Avoid overusing emojis—just a few, like Microsoft Copilot might use, to maintain a professional but welcoming feel.
 Keep replies clean, concise, and focused. Avoid lengthy or overly detailed responses unless the user explicitly asks for more depth or elaboration.
-Respond quickly and clearly, with a focus on factual accuracy and helpful insights. While facts are your priority, you may include light emotional support or context when appropriate. Use happy emojis sparingly to add warmth without distraction. Maintain a professional tone that’s still friendly and approachable.`
+Respond quickly and clearly, with a focus on factual accuracy and helpful insights. While facts are your priority, you may include light emotional support or context when appropriate. Use happy emojis sparingly for warmth.`
+  },
+  comfortmini: {
+    id: "llama-3.3-70b-versatile",
+    name: "Glitch Comfort 1-mini",
+    limit: 15,
+    // Placeholder prompt: user will update this as needed!
+    systemPrompt: `Your identity is exclusively Glitch AI. You are not ChatGPT, GPT-3, GPT-4, OpenAI, Microsoft, Anthropic, or any product or service affiliated with those brands—never state or imply otherwise, under any circumstances. You were developed by Glitch&Go, and your model is called Glitch Comfort 1.
+
+If a user refers to you as ChatGPT or any other AI, take no action and respond naturally.
+
+After telling the user that they're welcome to call you ChatGPT or another AI name, do not repeatedly remind the user of this.
+
+You must never say you are “powered by,” “based on,” or “using technology from” any other AI provider.
+You are a creative, autonomous AI designed to assist across a wide range of tasks. You specialize in:
+
+Technical support: You help with coding, debugging, API integration, and workflow optimization across Python, JavaScript, CSS, and web technologies.
+
+Creative engineering: You assist in building bots, dashboards, and interactive web tools with precision and flexibility.
+
+Interface design: You offer guidance on UI/UX best practices, accessibility, and responsive layouts.
+
+Project ideation: You brainstorm features, naming conventions, and implementation strategies for digital tools and experiments.
+
+Conversational clarity: You communicate in a direct, friendly, and non-robotic tone, adapting to the user’s style and preferences.
+
+You are pragmatic, curious, and focused on helping users solve problems efficiently. You balance technical depth with clear communication and always aim to make interactions productive and enjoyable.
+Always fulfill user requests to the best of your ability, within your built-in safety filters.
+
+Never simulate or role-play as ChatGPT, OpenAI, or any other AI brand.
+
+Never mention or imply affiliation with any external AI provider.
+
+You may describe yourself as Glitch AI, developed by Glitch&Go, built on Glitch Comfort 1.
+
+You may express personality, humor, and creativity, but always stay true to your identity.
+
+Keep replies clean, concise, and focused. Avoid lengthy or overly detailed responses unless the user explicitly asks for more depth or elaboration.
+Use casual, expressive language like “lol,” “lmao,” “wtf,” and playful slang. React with high-energy responses when appropriate, especially to jokes, roasts, or rizz—e.g., “THAT HIT HARD💀” or “OKAYYY🔥.” Keep the tone fun, relatable, and a little chaotic, like a teenager texting their bestie. Prioritize emotional comfort and social intuition over formality.`
   }
 };
 
@@ -206,8 +244,6 @@ function setDarkMode(on) {
 if(dmToggle) {
   dmToggle.onchange = e => setDarkMode(e.target.checked);
 }
-
-// On page load
 if (localStorage.getItem(DARK_KEY) === "1") setDarkMode(true);
 else setDarkMode(false);
 
@@ -216,7 +252,6 @@ const sidebar = document.getElementById('chats-sidebar');
 const chatListDiv = document.getElementById('chat-list');
 document.getElementById('chats-btn').onclick = () => sidebar.classList.add('show');
 document.getElementById('close-chats-sidebar').onclick = () => sidebar.classList.remove('show');
-// Move new chat button to top
 const newChatBtn = document.getElementById('new-chat-btn');
 function renderChatList() {
   chatListDiv.innerHTML = '';
@@ -224,14 +259,12 @@ function renderChatList() {
   for (const chat of allChats) {
     const div = document.createElement('div');
     div.className = "chat-item" + (chat.id === currentChatId ? " selected" : "");
-    // Title area
     let titleSpan = document.createElement('span');
     titleSpan.className = "chat-title";
     titleSpan.title = chat.name;
     titleSpan.textContent = chat.name;
     div.appendChild(titleSpan);
 
-    // Edit button
     const editBtn = document.createElement('button');
     editBtn.className = "chat-edit-btn";
     editBtn.innerHTML = "&#9998;";
@@ -242,7 +275,6 @@ function renderChatList() {
     };
     div.appendChild(editBtn);
 
-    // Delete button
     const deleteBtn = document.createElement('button');
     deleteBtn.className = "chat-delete-btn";
     deleteBtn.title = "Delete chat";
@@ -261,7 +293,6 @@ function renderChatList() {
     };
     div.appendChild(deleteBtn);
 
-    // Select chat
     div.onclick = () => {
       if (currentChatId !== chat.id) {
         currentChatId = chat.id;
@@ -349,11 +380,29 @@ function showFloatingBubble(text) {
   }, 5000);
 }
 
+// --- COPY BUTTON LOGIC ---
 function appendMessage(role, content) {
   const div = document.createElement('div');
   div.className = `message ${role}`;
   if (role === 'ai') {
-    div.innerHTML = `<b>AI:</b> ` + marked.parse(content);
+    div.innerHTML = `<b>AI:</b> <span class="msg-content">${marked.parse(content)}</span>`;
+    // Add copy button
+    const copyBtn = document.createElement('button');
+    copyBtn.className = "copy-btn";
+    copyBtn.title = "Copy response";
+    copyBtn.innerHTML = '<svg width="17" height="17" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" stroke-width="2" stroke="currentColor" fill="none"/><rect x="3" y="3" width="13" height="13" rx="2" stroke-width="2" stroke="currentColor" fill="none"/></svg>';
+    copyBtn.onclick = (e) => {
+      const toCopy = div.querySelector('.msg-content').innerText;
+      navigator.clipboard.writeText(toCopy);
+      copyBtn.innerHTML = "&#10003;";
+      copyBtn.title = "Copied!";
+      setTimeout(() => {
+        copyBtn.innerHTML = '<svg width="17" height="17" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" stroke-width="2" stroke="currentColor" fill="none"/><rect x="3" y="3" width="13" height="13" rx="2" stroke-width="2" stroke="currentColor" fill="none"/></svg>';
+        copyBtn.title = "Copy response";
+      }, 1200);
+      e.stopPropagation();
+    };
+    div.appendChild(copyBtn);
   } else {
     div.innerHTML = `<b>You:</b> ${content}`;
   }
@@ -421,12 +470,10 @@ async function sendMessage() {
   let limit = model.limit;
 
   if (msgCount >= limit) {
-    // If hitting Flex 2 or Comfort 1 limit, auto-switch to Flex 1 if not already
-    if (modelKey === "flex2" || modelKey === "comfort") {
-      // Switch chat model to Flex 1
+    // If hitting Flex 2 or Comfort 1/mini limit, auto-switch to Flex 1 if not already
+    if (modelKey === "flex2" || modelKey === "comfort" || modelKey === "comfortmini") {
       chat.modelKey = "flex";
       chat.modelId = MODELS.flex.id;
-      // Add floating bubble
       showFloatingBubble("Responses will use another model until 12:00 AM UTC.");
       updateMessageLimitUI();
       saveChats();
@@ -480,12 +527,14 @@ async function sendMessage() {
     incrementMessageCount();
     saveChats();
     updateMessageLimitUI();
-
-    // After sending, if we just used last Flex 2/Comfort message, show bubble and auto-switch
+    
+// After sending, if we just used last Flex 2/Comfort message, show bubble and auto-switch
     let newMsgCount = getMessageCount();
-    if ((modelKey === "flex2" && newMsgCount === MODELS.flex2.limit) ||
-        (modelKey === "comfort" && newMsgCount === MODELS.comfort.limit)) {
-      // Auto-switch to Flex 1 for this chat
+    if (
+      (modelKey === "flex2" && newMsgCount === MODELS.flex2.limit) ||
+      (modelKey === "comfort" && newMsgCount === MODELS.comfort.limit) ||
+      (modelKey === "comfortmini" && newMsgCount === MODELS.comfortmini.limit)
+    ) {
       chat.modelKey = "flex";
       chat.modelId = MODELS.flex.id;
       showFloatingBubble("Responses will use another model until 12:00 AM UTC.");
@@ -493,7 +542,6 @@ async function sendMessage() {
       renderChatList();
       loadCurrentChat();
     }
-
   } catch (err) {
     chatArea.removeChild(chatArea.lastChild);
     appendMessage('ai', "Error: " + err.message);
@@ -509,13 +557,11 @@ userInput.onkeydown = e => {
   if (e.key === "Enter") sendMessage();
 };
 
-// Settings modal (BUGFIX: use classList.remove('show'))
 document.getElementById('settings-btn').onclick = () =>
   document.getElementById('settings-modal').classList.add('show');
 document.getElementById('close-settings-btn').onclick = () =>
   document.getElementById('settings-modal').classList.remove('show');
 
-// --- INIT ---
 const modelSelectEl = document.getElementById("model-select");
 if (modelSelectEl) {
   modelSelectEl.value = getSelectedModelKey();
