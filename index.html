@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>Glitch AI</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="icon" href="/favicon.png" type="image/png">
+  <link rel="icon" href="/favicon.png" type="image/png">
   <style>
     html, body {
       height: 100%;
@@ -460,7 +460,7 @@
     <span class="topicon" title="Settings" id="settings-btn">
       <svg viewBox="0 0 24 24">
         <circle cx="12" cy="12" r="3" />
-        <path d="M19.4 15a1.7 1.7 0 0 0 .33 1.82l.02.02a2 2 0 0 1-2.83 2.83l-.02-.02A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1.82.33l-.02.02a2 2 0 0 1-2.83-2.83l.02-.02A1.7 1.7 0 0 0 8.6 15a1.7 1.7 0 0 0-1.82-.33l-.02.02a2 2 0 0 1-2.83-2.83l.02-.02A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.33-1.82l-.02-.02a2 2 0 0 1 2.83-2.83l.02.02A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1.82-.33l.02-.02a2 2 0 0 1 2.83 2.83l-.02.02A1.7 1.7 0 0 0 15 4.6a1.7 1.7 0 0 0 1.82.33l.02-.02a2 2 0 0 1 2.83 2.83l-.02.02A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 .33 1.82l.02.02a2 2 0 0 1-2.83 2.83l-.02-.02A1.7 1.7 0 0 0 15 19.4z"/>
+        <path d="M19.4 15a1.7 1.7 0 0 0 .33 1.82l.02.02a2 2 0 0 1-2.83 2.83l-.02-.02A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1.82.33l-.02.02a2 2 0 0 1-2.83-2.83l.02-.02A1.7 1.7 0 0 0 8.6 15a1.7 1.7 0 0 0-1.82-.33l-.02.02a2 2 0 0 1-2.83-2.83l.02-.02A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.33-1.82l-.02-.02a2 2 0 0 1 2.83-2.83l.02.02A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1.82-.33l.02-.02a2 2 0 0 1 2.83 2.83l-.02.02A1.7 1.7 0 0 0 15 8.6a1.7 1.7 0 0 0 1.82.33l.02-.02a2 2 0 0 1 2.83 2.83l-.02.02A1.7 1.7 0 0 0 19.4 15Z"/>
       </svg>
     </span>
   </div>
@@ -487,6 +487,19 @@
           <span class="slider"></span>
         </label>
         <span id="darkmode-label">Dark mode</span>
+      </div>
+      <!-- NEW: Switch Model -->
+      <div style="margin-top: 28px; text-align: left;">
+        <label for="model-select" style="font-weight:500;">Switch Model</label>
+        <select id="model-select" style="margin-left:12px; font-size:1.08em; padding:3px 10px; border-radius:6px;">
+          <option value="flex">Glitch Flex</option>
+          <option value="comfort">Glitch Comfort</option>
+        </select>
+        <div style="font-size:.94em; margin-top:7px; color:#888; max-width:320px;">
+          Model is used for new chats. <br>
+          <b>Glitch Flex:</b> Fast, balanced, creative (20B).<br>
+          <b>Glitch Comfort:</b> More detailed, nuanced (Qwen3-32B).
+        </div>
       </div>
     </div>
   </div>
@@ -527,6 +540,18 @@
     // On page load
     if (localStorage.getItem(DARK_KEY) === "1") setDarkMode(true);
     else setDarkMode(false);
+
+    // Model select persistence
+    const modelSelect = document.getElementById('model-select');
+    const LOCAL_MODEL_KEY = "glitchai_model";
+    if (modelSelect) {
+      // Set initial value
+      modelSelect.value = localStorage.getItem(LOCAL_MODEL_KEY) || "flex";
+      modelSelect.onchange = function() {
+        localStorage.setItem(LOCAL_MODEL_KEY, modelSelect.value);
+      };
+    }
+
   </script>
 </body>
 </html>
