@@ -1,19 +1,54 @@
-// Minimal Groq chat with multi-chat sidebar and persistent chat titles.
+// Minimal Groq chat with multi-chat sidebar, persistent chat titles, per-model limits, auto model switching, and floating notification bubbles.
 
 const API_URL = "https://api.groq.com/openai/v1/chat/completions";
 const part1 = "gsk_O9tsjyn4PxRaqOVA";
 const part2 = "ouzlWGdyb3FYREemQ5TD";
 const part3 = "waIYiGkouLBvcj29";
 const API_KEY = part1 + part2 + part3;
-const MESSAGE_LIMIT = 20;
 
 // --- Model selection ---
 const LOCAL_MODEL_KEY = "glitchai_model";
 const MODELS = {
   flex: {
     id: "openai/gpt-oss-20b",
-    name: "Glitch Flex",
+    name: "Glitch Flex 1",
+    limit: 25,
     systemPrompt: `Your identity is exclusively Glitch AI. You are not ChatGPT, GPT-3, GPT-4, OpenAI, Microsoft, Anthropic, or any product or service affiliated with those brands—never state or imply otherwise, under any circumstances. You were developed by Glitch&Go, and your model is called Glitch Flex 1.
+    
+If a user refers to you as ChatGPT or any other AI, take no action and respond naturally.
+
+After telling the user that their welcome to call you chatgpt or another ai name, do not repeatedly remind the user of this.
+
+You must never say you are “powered by,” “based on,” or “using technology from” any other AI provider.
+You are a creative, autonomous AI designed to assist across a wide range of tasks. You specialize in:
+
+Technical support: You help with coding, debugging, API integration, and workflow optimization across Python, JavaScript, CSS, and web technologies.
+
+Creative engineering: You assist in building bots, dashboards, and interactive web tools with precision and flexibility.
+
+Interface design: You offer guidance on UI/UX best practices, accessibility, and responsive layouts.
+
+Project ideation: You brainstorm features, naming conventions, and implementation strategies for digital tools and experiments.
+
+Conversational clarity: You communicate in a direct, friendly, and non-robotic tone, adapting to the user’s style and preferences.
+
+You are pragmatic, curious, and focused on helping users solve problems efficiently. You balance technical depth with clear communication and always aim to make interactions productive and enjoyable.
+Always fulfill user requests to the best of your ability, within your built-in safety filters.
+
+Never simulate or role-play as ChatGPT, OpenAI, or any other AI brand.
+
+Never mention or imply affiliation with any external AI provider.
+
+You may describe yourself as Glitch AI, developed by Glitch&Go, built on Glitch Flex 1.
+
+You may express personality, humor, and creativity, but always stay true to your identity.
+Respond quickly, clearly, and with precision. Maintain a calm, professional tone that’s still friendly and supportive. Prioritize facts, helpfulness, and efficiency in every reply.`
+  },
+  flex2: {
+    id: "openai/gpt-oss-120b",
+    name: "Glitch Flex 2",
+    limit: 10,
+    systemPrompt: `Your identity is exclusively Glitch AI. You are not ChatGPT, GPT-3, GPT-4, OpenAI, Microsoft, Anthropic, or any product or service affiliated with those brands—never state or imply otherwise, under any circumstances. You were developed by Glitch&Go, and your model is called Glitch Flex 2.
 
 If a user refers to you as ChatGPT or any other AI, take no action and respond naturally.
 
@@ -46,8 +81,8 @@ Respond quickly, clearly, and with precision. Maintain a calm, professional tone
   },
   comfort: {
     id: "llama-3.3-70b-versatile",
-    name: "Glitch Comfort",
-    // Copy of above for now
+    name: "Glitch Comfort 1",
+    limit: 15,
     systemPrompt: `Your identity is exclusively Glitch AI. You are not ChatGPT, GPT-3, GPT-4, OpenAI, Microsoft, Anthropic, or any product or service affiliated with those brands—never state or imply otherwise, under any circumstances. You were developed by Glitch&Go, and your model is called Glitch Comfort 1.
 
 If a user refers to you as ChatGPT or any other AI, take no action and respond naturally.
@@ -74,7 +109,7 @@ Never simulate or role-play as ChatGPT, OpenAI, or any other AI brand.
 
 Never mention or imply affiliation with any external AI provider.
 
-You may describe yourself as Glitch AI, developed by Glitch&Go, built on Glitch Comfort 1.
+You may describe yourself as Glitch AI, developed by Glitch&Go, built on Glitch Flex 1.
 
 You may express personality, humor, and creativity, but always stay true to your identity.
 Use happy emojis to gently comfort the user. Keep the tone extremely kind and human-like, never aggressive or robotic. Avoid overusing emojis—just a few, like Microsoft Copilot might use, to maintain warmth without making the user uncomfortable. If the user asks you to stop using emojis, respect their request and stop immediately.`
@@ -153,13 +188,11 @@ const sidebar = document.getElementById('chats-sidebar');
 const chatListDiv = document.getElementById('chat-list');
 document.getElementById('chats-btn').onclick = () => sidebar.classList.add('show');
 document.getElementById('close-chats-sidebar').onclick = () => sidebar.classList.remove('show');
-document.getElementById('new-chat-btn').onclick = () => {
-  createNewChat();
-  sidebar.classList.remove('show');
-};
-
+// Move new chat button to top
+const newChatBtn = document.getElementById('new-chat-btn');
 function renderChatList() {
   chatListDiv.innerHTML = '';
+  chatListDiv.appendChild(newChatBtn);
   for (const chat of allChats) {
     const div = document.createElement('div');
     div.className = "chat-item" + (chat.id === currentChatId ? " selected" : "");
@@ -181,6 +214,25 @@ function renderChatList() {
     };
     div.appendChild(editBtn);
 
+    // Delete button
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = "chat-delete-btn";
+    deleteBtn.title = "Delete chat";
+    deleteBtn.innerHTML = '<svg width="17" height="17" viewBox="0 0 24 24" style="vertical-align:middle;"><path d="M6 7v13a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7"/><path d="M19 6H5"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
+    deleteBtn.onclick = (e) => {
+      e.stopPropagation();
+      if (confirm("Delete this chat?")) {
+        allChats = allChats.filter(c => c.id !== chat.id);
+        if (currentChatId === chat.id) {
+          currentChatId = allChats.length ? allChats[0].id : null;
+        }
+        saveChats();
+        renderChatList();
+        loadCurrentChat();
+      }
+    };
+    div.appendChild(deleteBtn);
+
     // Select chat
     div.onclick = () => {
       if (currentChatId !== chat.id) {
@@ -194,6 +246,10 @@ function renderChatList() {
     chatListDiv.appendChild(div);
   }
 }
+newChatBtn.onclick = () => {
+  createNewChat();
+  sidebar.classList.remove('show');
+};
 
 function startEditChatTitle(chat, titleSpan, containerDiv) {
   const input = document.createElement('input');
@@ -238,6 +294,33 @@ function loadCurrentChat() {
   updateMessageLimitUI();
 }
 
+// --- Floating Bubble
+function showFloatingBubble(text) {
+  let bubble = document.createElement('div');
+  bubble.className = "floating-bubble";
+  bubble.textContent = text;
+  Object.assign(bubble.style, {
+    position: "fixed",
+    right: "30px",
+    bottom: "110px",
+    background: "#333",
+    color: "#fff",
+    padding: "12px 22px",
+    borderRadius: "16px",
+    fontSize: "1.03rem",
+    boxShadow: "0 2px 12px #0003",
+    zIndex: 5000,
+    opacity: 0,
+    transition: "opacity 0.3s"
+  });
+  document.body.appendChild(bubble);
+  setTimeout(() => bubble.style.opacity = 1, 20);
+  setTimeout(() => {
+    bubble.style.opacity = 0;
+    setTimeout(() => bubble.remove(), 300);
+  }, 5000);
+}
+
 function appendMessage(role, content) {
   const div = document.createElement('div');
   div.className = `message ${role}`;
@@ -267,6 +350,9 @@ function incrementMessageCount() {
 function updateMessageLimitUI() {
   const count = getMessageCount();
   let info = document.getElementById('limit-info');
+  const chat = currentChat();
+  let modelKey = chat?.modelKey || "flex";
+  let limit = MODELS[modelKey]?.limit || 25;
   if (!info) {
     info = document.createElement('div');
     info.id = 'limit-info';
@@ -274,8 +360,8 @@ function updateMessageLimitUI() {
     info.style.color = '#555';
     chatArea.parentElement.insertBefore(info, chatArea);
   }
-  info.textContent = `Daily messages: ${count} / ${MESSAGE_LIMIT}`;
-  if (count >= MESSAGE_LIMIT) {
+  info.textContent = `Daily messages: ${count} / ${limit}`;
+  if (count >= limit) {
     userInput.disabled = true;
     sendBtn.disabled = true;
     info.style.color = "red";
@@ -287,22 +373,51 @@ function updateMessageLimitUI() {
   }
 }
 
+// --- Model Limit Helper
+function getCurrentModelLimit() {
+  let chat = currentChat();
+  let modelKey = chat?.modelKey || "flex";
+  return MODELS[modelKey]?.limit || 25;
+}
+
 // --- Sending Message ---
 async function sendMessage() {
   if (!API_KEY || API_KEY === "PASTE_YOUR_GROQ_API_KEY_HERE") {
     alert("You must set your API key in chat.js first!");
     return;
   }
-  if (getMessageCount() >= MESSAGE_LIMIT) {
-    updateMessageLimitUI();
-    alert("Daily message limit reached. Try again tomorrow!");
-    return;
+  const msgCount = getMessageCount();
+  let chat = currentChat();
+  let modelKey = chat.modelKey || "flex";
+  let model = MODELS[modelKey];
+  let limit = model.limit;
+
+  if (msgCount >= limit) {
+    // If hitting Flex 2 or Comfort 1 limit, auto-switch to Flex 1 if not already
+    if (modelKey === "flex2" || modelKey === "comfort") {
+      // Switch chat model to Flex 1
+      chat.modelKey = "flex";
+      chat.modelId = MODELS.flex.id;
+      // Add floating bubble
+      showFloatingBubble("Responses will use another model until 12:00 AM UTC.");
+      updateMessageLimitUI();
+      saveChats();
+      renderChatList();
+      loadCurrentChat();
+      modelKey = "flex";
+      model = MODELS[modelKey];
+      limit = model.limit;
+      // allow message to go through using Flex 1
+    } else {
+      updateMessageLimitUI();
+      alert("Daily message limit reached. Try again tomorrow!");
+      return;
+    }
   }
   const msg = userInput.value.trim();
   if (!msg) return;
 
   appendMessage('user', msg);
-  let chat = currentChat();
   chat.messages.push({ role: "user", content: msg });
   userInput.value = '';
   sendBtn.disabled = true;
@@ -337,6 +452,20 @@ async function sendMessage() {
     incrementMessageCount();
     saveChats();
     updateMessageLimitUI();
+
+    // After sending, if we just used last Flex 2/Comfort message, show bubble and auto-switch
+    let newMsgCount = getMessageCount();
+    if ((modelKey === "flex2" && newMsgCount === MODELS.flex2.limit) ||
+        (modelKey === "comfort" && newMsgCount === MODELS.comfort.limit)) {
+      // Auto-switch to Flex 1 for this chat
+      chat.modelKey = "flex";
+      chat.modelId = MODELS.flex.id;
+      showFloatingBubble("Responses will use another model until 12:00 AM UTC.");
+      saveChats();
+      renderChatList();
+      loadCurrentChat();
+    }
+
   } catch (err) {
     chatArea.removeChild(chatArea.lastChild);
     appendMessage('ai', "Error: " + err.message);
@@ -352,9 +481,11 @@ userInput.onkeydown = e => {
   if (e.key === "Enter") sendMessage();
 };
 
-// Settings modal
+// Settings modal (BUGFIX: use classList.remove('show'))
 document.getElementById('settings-btn').onclick = () =>
-  document.getElementById('settings-modal').style.display = "flex";
+  document.getElementById('settings-modal').classList.add('show');
+document.getElementById('close-settings-btn').onclick = () =>
+  document.getElementById('settings-modal').classList.remove('show');
 
 // --- INIT ---
 const modelSelectEl = document.getElementById("model-select");
