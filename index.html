@@ -546,28 +546,7 @@
       document.getElementById('settings-modal').classList.add('show');
     document.getElementById('close-settings-btn').onclick = () =>
       document.getElementById('settings-modal').classList.remove('show');
-
-    // Dark mode logic (persisted)
-    const body = document.body;
-    const DARK_KEY = "glitchai_dark";
-    const dmToggle = document.getElementById('darkmode-toggle');
-
-    function setDarkMode(on) {
-      if (on) {
-        body.classList.add("dark");
-        localStorage.setItem(DARK_KEY, "1");
-        dmToggle.checked = true;
-      } else {
-        body.classList.remove("dark");
-        localStorage.setItem(DARK_KEY, "");
-        dmToggle.checked = false;
-      }
-    }
-    dmToggle.onchange = e => setDarkMode(e.target.checked);
-
-    if (localStorage.getItem(DARK_KEY) === "1") setDarkMode(true);
-    else setDarkMode(false);
-
+    
     // Model select persistence
     const modelSelect = document.getElementById('model-select');
     const LOCAL_MODEL_KEY = "glitchai_model";
