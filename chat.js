@@ -450,6 +450,34 @@ function updateMessageLimitUI() {
   }
 }
 
+// --- Export Chat Logic
+document.getElementById('export-chat-btn').onclick = function() {
+  let chat = currentChat();
+  if (!chat) return alert("No chat selected!");
+  // Compose markdown
+  let modelName = MODELS[chat.modelKey]?.name || "Glitch Flex 1";
+  let md = `# Glitch Chat Export\n\n**Model:** ${modelName}\n\n`;
+  for (const m of chat.messages) {
+    if (m.role === "system") continue;
+    // Use ISO or local time
+    let ts = m.timestamp ? new Date(m.timestamp).toLocaleString() : '';
+    let who = m.role === "user" ? "**You:**" : "**AI:**";
+    md += `\n---\n`;
+    if (ts) md += `*${ts}*\n`;
+    md += `${who}\n\n${m.content.trim()}\n`;
+  }
+  md += `\n---\n*Exported on ${new Date().toLocaleString()}*\n`;
+  // Blob and download
+  let fname = (chat.name || "chat") + ".md";
+  let blob = new Blob([md], {type: "text/markdown"});
+  let a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = fname.replace(/[\\\/:*?"<>|]/g, "_");
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { document.body.removeChild(a); }, 100);
+};
+
 // --- Model Limit Helper
 function getCurrentModelLimit() {
   let chat = currentChat();
