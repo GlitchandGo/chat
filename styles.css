@@ -488,3 +488,19 @@ body.dark .copy-btn:hover, body.dark .copy-btn:focus {
   background: #242b38;
   color: #b1d4fc;
 }
+.export-btn {
+  background: #4f1aff;
+  color: #fff;
+  border: none;
+  border-radius: 9px;
+  font-size: 1.07em;
+  padding: 7px 18px;
+  margin-top: 6px;
+  cursor: pointer;
+  transition: background 0.16s, color 0.16s;
+  box-shadow: 0 1px 3px #0001;
+}
+.export-btn:hover, .export-btn:focus {
+  background: #6849e1;
+  color: #fff;
+}
