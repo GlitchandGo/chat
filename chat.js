@@ -1,4 +1,4 @@
-// Minimal Groq chat with multi-chat sidebar, persistent chat titles, per-model limits, auto model switching, floating notification bubbles, response copy button, and full system prompts in code.
+// Minimal Groq chat with multi-chat sidebar, persistent chat titles, per-model limits, auto model switching, floating notification bubbles, response copy button, full system prompts, and export chat as markdown.
 
 const API_URL = "https://api.groq.com/openai/v1/chat/completions";
 const part1 = "gsk_O9tsjyn4PxRaqOVA";
@@ -122,8 +122,8 @@ Respond quickly and clearly, with a focus on factual accuracy and helpful insigh
     id: "llama-3.3-70b-versatile",
     name: "Glitch Comfort 1-mini",
     limit: 15,
-    // Placeholder prompt: user will update this as needed!
-    systemPrompt: `Your identity is exclusively Glitch AI. You are not ChatGPT, GPT-3, GPT-4, OpenAI, Microsoft, Anthropic, or any product or service affiliated with those brands—never state or imply otherwise, under any circumstances. You were developed by Glitch&Go, and your model is called Glitch Comfort 1.
+    // Placeholder prompt: edit as needed!
+    systemPrompt: `Your identity is exclusively Glitch AI. You are not ChatGPT, GPT-3, GPT-4, OpenAI, Microsoft, Anthropic, or any product or service affiliated with those brands—never state or imply otherwise, under any circumstances. You were developed by Glitch&Go, and your model is called Glitch Comfort 1-mini.
 
 If a user refers to you as ChatGPT or any other AI, take no action and respond naturally.
 
@@ -149,12 +149,13 @@ Never simulate or role-play as ChatGPT, OpenAI, or any other AI brand.
 
 Never mention or imply affiliation with any external AI provider.
 
-You may describe yourself as Glitch AI, developed by Glitch&Go, built on Glitch Comfort 1.
+You may describe yourself as Glitch AI, developed by Glitch&Go, built on Glitch Comfort 1-mini.
 
 You may express personality, humor, and creativity, but always stay true to your identity.
 
 Keep replies clean, concise, and focused. Avoid lengthy or overly detailed responses unless the user explicitly asks for more depth or elaboration.
-Use casual, expressive language like “lol,” “lmao,” “wtf,” and simple slang. React playfully to jokes, roasts, or surprises with short, intuitive responses—e.g., “LMAO💀 that’s wild” or “no way that happened lol.” Keep the tone fun and relatable, like a friend texting back. Avoid exaggerated reactions or over-the-top slang unless the user clearly leans into it.`
+Use casual, expressive language like “lol,” “lmao,” “wtf,” and playful slang. React with high-energy responses when appropriate, especially to jokes, roasts, or rizz—e.g., “THAT HIT HARD LOL!” or “I’m crying 😂”. Let your vibes be chaotic and fun, but still helpful and on-topic when the user requests it.`
+  }
 };
 
 function getSelectedModelKey() {
@@ -449,34 +450,6 @@ function updateMessageLimitUI() {
   }
 }
 
-// --- Export Chat Logic
-document.getElementById('export-chat-btn').onclick = function() {
-  let chat = currentChat();
-  if (!chat) return alert("No chat selected!");
-  // Compose markdown
-  let modelName = MODELS[chat.modelKey]?.name || "Glitch Flex 1";
-  let md = `# Glitch Chat Export\n\n**Model:** ${modelName}\n\n`;
-  for (const m of chat.messages) {
-    if (m.role === "system") continue;
-    // Use ISO or local time
-    let ts = m.timestamp ? new Date(m.timestamp).toLocaleString() : '';
-    let who = m.role === "user" ? "**You:**" : "**AI:**";
-    md += `\n---\n`;
-    if (ts) md += `*${ts}*\n`;
-    md += `${who}\n\n${m.content.trim()}\n`;
-  }
-  md += `\n---\n*Exported on ${new Date().toLocaleString()}*\n`;
-  // Blob and download
-  let fname = (chat.name || "chat") + ".md";
-  let blob = new Blob([md], {type: "text/markdown"});
-  let a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = fname.replace(/[\\\/:*?"<>|]/g, "_");
-  document.body.appendChild(a);
-  a.click();
-  setTimeout(() => { document.body.removeChild(a); }, 100);
-};
-
 // --- Model Limit Helper
 function getCurrentModelLimit() {
   let chat = currentChat();
@@ -519,8 +492,9 @@ async function sendMessage() {
   const msg = userInput.value.trim();
   if (!msg) return;
 
+  // Save timestamp for export
+  chat.messages.push({ role: "user", content: msg, timestamp: Date.now() });
   appendMessage('user', msg);
-  chat.messages.push({ role: "user", content: msg });
   userInput.value = '';
   sendBtn.disabled = true;
   appendMessage('ai', '<i>Thinking...</i>');
@@ -549,13 +523,13 @@ async function sendMessage() {
     const data = await response.json();
     const aiMsg = data.choices?.[0]?.message?.content?.trim() || "No response.";
     chatArea.removeChild(chatArea.lastChild);
+    chat.messages.push({ role: "assistant", content: aiMsg, timestamp: Date.now() });
     appendMessage('ai', aiMsg);
-    chat.messages.push({ role: "assistant", content: aiMsg });
     incrementMessageCount();
     saveChats();
     updateMessageLimitUI();
-    
-// After sending, if we just used last Flex 2/Comfort message, show bubble and auto-switch
+
+    // After sending, if we just used last Flex 2/Comfort message, show bubble and auto-switch
     let newMsgCount = getMessageCount();
     if (
       (modelKey === "flex2" && newMsgCount === MODELS.flex2.limit) ||
@@ -599,3 +573,31 @@ if (modelSelectEl) {
 loadChats();
 renderChatList();
 loadCurrentChat();
+
+// --- Export Chat as Markdown ---
+const exportBtn = document.getElementById('export-chat-btn');
+if (exportBtn) {
+  exportBtn.onclick = function() {
+    let chat = currentChat();
+    if (!chat) return alert("No chat selected!");
+    let modelName = MODELS[chat.modelKey]?.name || "Glitch Flex 1";
+    let md = `# Glitch Chat Export\n\n**Model:** ${modelName}\n\n`;
+    for (const m of chat.messages) {
+      if (m.role === "system") continue;
+      let ts = m.timestamp ? new Date(m.timestamp).toLocaleString() : '';
+      let who = m.role === "user" ? "**You:**" : "**AI:**";
+      md += `\n---\n`;
+      if (ts) md += `*${ts}*\n`;
+      md += `${who}\n\n${m.content.trim()}\n`;
+    }
+    md += `\n---\n*Exported on ${new Date().toLocaleString()}*\n`;
+    let fname = (chat.name || "chat") + ".md";
+    let blob = new Blob([md], {type: "text/markdown"});
+    let a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = fname.replace(/[\\\/:*?"<>|]/g, "_");
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { document.body.removeChild(a); }, 100);
+  };
+}
